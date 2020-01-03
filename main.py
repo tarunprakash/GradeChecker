@@ -14,8 +14,8 @@ ASSIGNMENTS_URL = "https://parents.frhsd.com/genesis/parents?tab1=studentdata&ta
 COURSE_NAMES = {
     "AP English Language & Comp" : "English",
     "Health 11 Lab" : "Health",
-    "Honors Precalculus" : "Precalculus",
-    "AP Computer Science A CS" : "Computer Science",
+    "Honors Precalculus" : "Precalc",
+    "AP Computer Science A CS" : "Comp Sci",
     "Physical Ed 11 Lab" : "Gym",
     "AP Physics 1" : "Physics",
     "AP US History" : "History",
