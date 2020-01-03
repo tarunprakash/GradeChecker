@@ -24,6 +24,8 @@ COURSE_NAMES = {
 
 UPDATE_FREQ = 30 ## number of seconds in between checks
 
+MAX_RETRIES = 10 ## number of times to retry url GET
+
 def read_login():
     ## Set variables from config
     with open("config.json") as infile:
@@ -41,7 +43,7 @@ def login(loginData):
 def get_all_assignments(s):
     ## Gets all assignments from assignment page and updates db
     ## Takes session as parameter
-    page = s.get(ASSIGNMENTS_URL)
+    page = get(ASSIGNMENTS_URL)
     tree = etree.HTML(page.text)
 
     rows = tree.xpath("//*/tr[contains(@class, 'listrow')]") ## array of Element objects
@@ -92,6 +94,14 @@ def text_changes(changes):
     sms.send_message(message)
     return
 
+def get(url, s):
+    for _ in range(MAX_RETRIES):
+        try:
+            s.get(url)
+        except:
+            continue
+        time.sleep(0.5)
+    
 
 oldData = []
 
@@ -105,9 +115,8 @@ sms.send_message("Grade checker service has started running.")
 while True:
     session = login(loginData)
     data = get_all_assignments(session)
-    if oldData == []:
-        oldData = data
-
+    if data == []: continue
+    if oldData == []: oldData = data
     changes, oldData = find_changes(oldData,session)
 
     if (len(changes) > 0):
