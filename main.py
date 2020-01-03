@@ -101,6 +101,7 @@ def get(url, s):
         except:
             continue
         time.sleep(0.5)
+        print("FAILED GET, RETRYING)
     
 
 oldData = []
@@ -125,6 +126,6 @@ while True:
         text_changes(changes)
 
     now = datetime.datetime.now()
-    print("Updated. {} -- took {}".format(now, now-lastTime))
+    print("Updated. {} -- took {}. {} assignments".format(now, now-lastTime, len(oldData))
     lastTime = now
     time.sleep(UPDATE_FREQ)
