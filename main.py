@@ -13,7 +13,7 @@ ASSIGNMENTS_URL = "https://parents.frhsd.com/genesis/parents?tab1=studentdata&ta
 
 COURSE_NAMES = {
     "AP English Language & Comp" : "English",
-    "Health 11 Lab" : "Health",
+    "Health 11 Lab" : "Health", 
     "Honors Precalculus" : "Precalc",
     "AP Computer Science A CS" : "Comp Sci",
     "Physical Ed 11 Lab" : "Gym",
@@ -51,6 +51,7 @@ def get_all_assignments(s):
     for row in rows:
         if len(row[5]) == 0: percentage = None
         else: percentage = "".join(row[5][-1].text.split())
+        ## holy hackjob
         temp = [
             row[2][0].text, ## course
             row[2][1].text, ## teacher
@@ -136,7 +137,10 @@ def run():
         lastTime = now
         time.sleep(UPDATE_FREQ)
 
+
+import traceback
 try:
     run()
 except Exception as e: ## notify user when program crashes
+    print(traceback.format_exc()) ## print traceback
     sms.send_message("Genesis program has crashed:\n{}".format(e))
