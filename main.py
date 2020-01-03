@@ -126,6 +126,6 @@ while True:
         text_changes(changes)
 
     now = datetime.datetime.now()
-    print("Updated. {} -- took {}. {} assignments".format(now, now-lastTime, len(oldData))
+    print("Updated. {} -- took {}. {} assignments".format(now, now-lastTime, len(oldData)))
     lastTime = now
     time.sleep(UPDATE_FREQ)
