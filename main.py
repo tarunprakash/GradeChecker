@@ -97,11 +97,11 @@ def text_changes(changes):
 def get(url, s):
     for _ in range(MAX_RETRIES):
         try:
-            s.get(url)
+            return s.get(url)
         except:
-            continue
-        time.sleep(0.5)
-        print("FAILED GET, RETRYING")
+            time.sleep(0.5)
+            print("FAILED GET, RETRYING")
+            
     
 
 oldData = []
