@@ -84,10 +84,16 @@ def text_changes(changes):
     currCourse = ""
 
     for change in changes:
+        if change[3] == "" and change[4] == "":
+            print("Skipping change: {}".format(change))
+            continue
         if change[0] != currCourse:
             message += "-- {} --\n".format(COURSE_NAMES[change[0]])
             currCourse = change[0]
-        message += "{}\n[{} - {}]\n".format(change[2],change[3],change[4])
+        message += "{}\n[{}]\n".format(change[2],
+            (" - ".join(
+                [x for x in [change[3],change[4]] if x is not None and x != ""]
+            ))) ## formats grade so that there won't be any blank spaces
 
     message = message.strip()
     ##print(message)
@@ -95,37 +101,42 @@ def text_changes(changes):
     return
 
 def get(url, s):
+    ## method for retrying get request multiple times before giving up
     for _ in range(MAX_RETRIES):
         try:
             return s.get(url)
         except:
-            time.sleep(0.5)
             print("FAILED GET, RETRYING")
+            time.sleep(0.5)
             
-    
+def run():    
+    ## main loop function
+    oldData = []
 
-oldData = []
+    loginData = read_login()
 
+    lastTime = datetime.datetime.now()
 
-loginData = read_login()
+    sms.send_message("Grade checker service has started running.")
 
-lastTime = datetime.datetime.now()
+    while True:
+        session = login(loginData)
+        data = get_all_assignments(session)
+        if data == []: continue
+        if oldData == []: oldData = data
+        changes, oldData = find_changes(oldData,session)
 
-sms.send_message("Grade checker service has started running.")
+        if (len(changes) > 0):
+            print("CHANGES: {}".format(changes))
+            print("Found {} changes. Notifying user.".format(len(changes)))
+            text_changes(changes)
 
-while True:
-    session = login(loginData)
-    data = get_all_assignments(session)
-    if data == []: continue
-    if oldData == []: oldData = data
-    changes, oldData = find_changes(oldData,session)
+        now = datetime.datetime.now()
+        print("Updated. {} -- took {}. {} assignments".format(now, now-lastTime, len(oldData)))
+        lastTime = now
+        time.sleep(UPDATE_FREQ)
 
-    if (len(changes) > 0):
-        print("CHANGES: {}".format(changes))
-        print("Found {} changes. Notifying user.".format(len(changes)))
-        text_changes(changes)
-
-    now = datetime.datetime.now()
-    print("Updated. {} -- took {}. {} assignments".format(now, now-lastTime, len(oldData)))
-    lastTime = now
-    time.sleep(UPDATE_FREQ)
+try:
+    run()
+except Exception as e: ## notify user when program crashes
+    sms.send_message("Genesis program has crashed:\n{}".format(e))
