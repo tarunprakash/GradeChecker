@@ -101,7 +101,7 @@ def get(url, s):
         except:
             continue
         time.sleep(0.5)
-        print("FAILED GET, RETRYING)
+        print("FAILED GET, RETRYING")
     
 
 oldData = []
