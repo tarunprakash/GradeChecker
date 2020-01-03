@@ -100,6 +100,8 @@ loginData = read_login()
 
 lastTime = datetime.datetime.now()
 
+sms.send_message("Grade checker service has started running.")
+
 while True:
     session = login(loginData)
     data = get_all_assignments(session)
