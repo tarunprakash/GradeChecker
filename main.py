@@ -43,7 +43,7 @@ def login(loginData):
 def get_all_assignments(s):
     ## Gets all assignments from assignment page and updates db
     ## Takes session as parameter
-    page = get(ASSIGNMENTS_URL)
+    page = get(ASSIGNMENTS_URL,s)
     tree = etree.HTML(page.text)
 
     rows = tree.xpath("//*/tr[contains(@class, 'listrow')]") ## array of Element objects
