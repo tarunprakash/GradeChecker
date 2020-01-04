@@ -24,7 +24,7 @@ COURSE_NAMES = {
 
 UPDATE_FREQ = 30 ## number of seconds in between checks
 
-MAX_RETRIES = 10 ## number of times to retry url GET
+MAX_RETRIES = 10 ## number of times to retry url GET/POST
 
 def read_login():
     ## Set variables from config
@@ -37,7 +37,7 @@ def login(loginData):
     ## Logs into genesis and returns session    
     s = requests.Session()
     ##print(loginData)
-    post_login = s.post(LOGIN_POST_URL, data=loginData)
+    post_login = post(LOGIN_POST_URL, loginData, s)
     return s
 
 def get_all_assignments(s):
@@ -109,6 +109,17 @@ def get(url, s):
         except:
             print("FAILED GET, RETRYING")
             time.sleep(0.5)
+
+def post(url, data, s):
+    ## method for retrying post request multiple times before giving up
+    for _ in range(MAX_RETRIES):
+        try:
+            return s.post(url, data=data)
+        except:
+            print("FAILED POST, RETRYING")
+            time.sleep(0.5)
+
+
             
 def run():    
     ## main loop function
