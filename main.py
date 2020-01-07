@@ -98,7 +98,8 @@ def text_changes(changes):
 
     message = message.strip()
     ##print(message)
-    sms.send_message(message)
+    if message != "": ## prevent empty message
+        sms.send_message(message)
     return
 
 def get(url, s):
