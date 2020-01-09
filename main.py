@@ -59,8 +59,9 @@ def get_all_assignments(s):
     data = [] ## all assignments data as list with format [course, teacher, assignment, grade, percentage]
     for row in range(1, len(rows)+1):
         ## holy hackjob
+    
         g = tree.xpath(grade.format(row)) ## check grade to see which index to use
-        if len(g) == 2: grade_str = format_grade(g[0])
+        if len(g) == 2 or len(g) == 1: grade_str = format_grade(g[0])
         else: grade_str = format_grade(g[1])
 
         p = tree.xpath(percentage.format(row)) ## check percentage for empty grades
@@ -75,7 +76,6 @@ def get_all_assignments(s):
             percent_str
         ]
         data.append(temp)
-    
     return data
 
 def find_changes(oldData,s):
@@ -118,20 +118,20 @@ def text_changes(changes):
 
 def get(url, s):
     ## method for retrying get request multiple times before giving up
-    for _ in range(MAX_RETRIES):
+    for i in range(MAX_RETRIES):
         try:
             return s.get(url)
         except:
-            print("FAILED GET, RETRYING")
+            print("FAILED GET, RETRYING {}".format(i))
             time.sleep(0.5)
 
 def post(url, data, s):
     ## method for retrying post request multiple times before giving up
-    for _ in range(MAX_RETRIES):
+    for i in range(MAX_RETRIES):
         try:
             return s.post(url, data=data)
         except:
-            print("FAILED POST, RETRYING")
+            print("FAILED POST, RETRYING {}".format(i))
             time.sleep(0.5)
 
 
@@ -149,7 +149,6 @@ def run():
     while True:
         session = login(loginData)
         data = get_all_assignments(session)
-        print (data[3])
         if data == []: continue
         if oldData == []: oldData = data
         changes, oldData = find_changes(oldData,session)
