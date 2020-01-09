@@ -40,6 +40,10 @@ def login(loginData):
     post_login = post(LOGIN_POST_URL, loginData, s)
     return s
 
+def format_grade(grade):
+    ## removes unnecessary newlines and returns from grade string
+    return "".join(grade.split())
+
 def get_all_assignments(s):
     ## Gets all assignments from assignment page and updates db
     ## Takes session as parameter
@@ -47,20 +51,27 @@ def get_all_assignments(s):
     tree = etree.HTML(page.text)
 
     rows = tree.xpath("//*/tr[contains(@class, 'listrow')]") ## array of Element objects
+    course = "//*/tr[contains(@class, 'listrow')][{}]/td[3]/div[1]"
+    teacher = "//*/tr[contains(@class, 'listrow')][{}]/td[3]/div[2]"
+    assignment = "//*/tr[contains(@class, 'listrow')][{}]/td[5]/b"
+    grade = "//*/tr[contains(@class, 'listrow')][{}]/td[6]/text()"
+    percentage = "//*/tr[contains(@class, 'listrow')][{}]/td[6]/div[contains(@style, 'bold')]"
     data = [] ## all assignments data as list with format [course, teacher, assignment, grade, percentage]
-    for row in rows:
-        if len(row[5]) == 0: percentage = None
-        else: percentage = "".join(row[5][-1].text.split())
+    for row in range(1, len(rows)+1):
         ## holy hackjob
+        g = tree.xpath(grade.format(row)) ## check grade to see which index to use
+        if len(g) == 2:
+            grade_str = format_grade(g[0])
+        else:
+            grade_str = format_grade(g[1])
         temp = [
-            row[2][0].text, ## course
-            row[2][1].text, ## teacher
-            row[4][0].text, ## assignment
-            "".join(row[5].text.split()), ## grade
-            percentage ## percentage
+            tree.xpath(course.format(row))[0].text, ## course
+            tree.xpath(teacher.format(row))[0].text, ## teacher
+            tree.xpath(assignment.format(row))[0].text, ## assignment
+            grade_str,
+            format_grade(tree.xpath(percentage.format(row))[0].text) ## percentage
         ]
         data.append(temp)
-        ##print (temp)
     
     return data
 
@@ -135,6 +146,7 @@ def run():
     while True:
         session = login(loginData)
         data = get_all_assignments(session)
+        print (data[3])
         if data == []: continue
         if oldData == []: oldData = data
         changes, oldData = find_changes(oldData,session)
