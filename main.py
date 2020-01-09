@@ -60,16 +60,19 @@ def get_all_assignments(s):
     for row in range(1, len(rows)+1):
         ## holy hackjob
         g = tree.xpath(grade.format(row)) ## check grade to see which index to use
-        if len(g) == 2:
-            grade_str = format_grade(g[0])
-        else:
-            grade_str = format_grade(g[1])
+        if len(g) == 2: grade_str = format_grade(g[0])
+        else: grade_str = format_grade(g[1])
+
+        p = tree.xpath(percentage.format(row)) ## check percentage for empty grades
+        if len(p) == 0: percent_str = ""
+        else: percent_str = format_grade(p[0].text)
+
         temp = [
             tree.xpath(course.format(row))[0].text, ## course
             tree.xpath(teacher.format(row))[0].text, ## teacher
             tree.xpath(assignment.format(row))[0].text, ## assignment
             grade_str,
-            format_grade(tree.xpath(percentage.format(row))[0].text) ## percentage
+            percent_str
         ]
         data.append(temp)
     
