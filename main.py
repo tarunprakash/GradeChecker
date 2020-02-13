@@ -5,7 +5,7 @@ import ast
 import datetime
 
 #personal module
-import sms
+import smsEmail as sms
 
 LOGIN_POST_URL = "https://parents.frhsd.com/genesis/sis/j_security_check"
 MAIN_GRADES_URL = "https://parents.frhsd.com/genesis/parents?tab1=studentdata&tab2=gradebook&tab3=weeklysummary&studentid=2140376&action=form"
@@ -23,6 +23,8 @@ COURSE_NAMES = {
 }
 
 UPDATE_FREQ = 30 ## number of seconds in between checks
+
+UPDATE_INTERVAL_LENGTH = 600 ## number of seconds between failed GET runs
 
 MAX_RETRIES = 10 ## number of times to retry url GET/POST
 
@@ -50,6 +52,7 @@ def get_all_assignments(s):
     page = get(ASSIGNMENTS_URL,s)
     tree = etree.HTML(page.text)
 
+    ## holy hackjob
     rows = tree.xpath("//*/tr[contains(@class, 'listrow')]") ## array of Element objects
     course = "//*/tr[contains(@class, 'listrow')][{}]/td[3]/div[1]"
     teacher = "//*/tr[contains(@class, 'listrow')][{}]/td[3]/div[2]"
@@ -57,9 +60,7 @@ def get_all_assignments(s):
     grade = "//*/tr[contains(@class, 'listrow')][{}]/td[6]/text()"
     percentage = "//*/tr[contains(@class, 'listrow')][{}]/td[6]/div[contains(@style, 'bold')]"
     data = [] ## all assignments data as list with format [course, teacher, assignment, grade, percentage]
-    for row in range(1, len(rows)+1):
-        ## holy hackjob
-    
+    for row in range(1, len(rows)+1):    
         g = tree.xpath(grade.format(row)) ## check grade to see which index to use
         if len(g) == 2 or len(g) == 1: grade_str = format_grade(g[0])
         else: grade_str = format_grade(g[1])
@@ -117,13 +118,15 @@ def text_changes(changes):
     return
 
 def get(url, s):
-    ## method for retrying get request multiple times before giving up
-    for i in range(MAX_RETRIES):
-        try:
-            return s.get(url)
-        except:
-            print("FAILED GET, RETRYING {}".format(i))
-            time.sleep(0.5)
+    ## method for retrying get request multiple times
+    while True: ## attempt then sleep for longer time before attempting again
+        for i in range(MAX_RETRIES):
+            try:
+                return s.get(url)
+            except:
+                print("FAILED GET, RETRYING {}".format(i))
+                time.sleep(0.5)
+        time.sleep(UPDATE_INTERVAL_LENGTH)
 
 def post(url, data, s):
     ## method for retrying post request multiple times before giving up
@@ -137,7 +140,7 @@ def post(url, data, s):
 
             
 def run():    
-    ## main loop function
+    ## main loop function for checking grades
     oldData = []
 
     loginData = read_login()
@@ -163,10 +166,24 @@ def run():
         lastTime = now
         time.sleep(UPDATE_FREQ)
 
+def check_emails():
+    ## continuously keep checking emails for message
+    message, last_id = sms.get_message(0)
+    print(message)
+    while True:
+        email = sms.get_message(last_id)
+        if email[0]: ## if not null 
+            message, last_id = email
+            print(email)
+            sms.send_message("RECEIVED " + message)
+        else: print("Nothing")
+        time.sleep(5) 
+        
+
 
 import traceback
 try:
-    run()
+    check_emails()
 except Exception as e: ## notify user when program crashes
     print(traceback.format_exc()) ## print traceback
     sms.send_message("Genesis program has crashed:\n{}".format(e))
