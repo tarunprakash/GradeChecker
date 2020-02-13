@@ -183,7 +183,7 @@ def check_emails():
 
 import traceback
 try:
-    check_emails()
+    run()
 except Exception as e: ## notify user when program crashes
     print(traceback.format_exc()) ## print traceback
     sms.send_message("Genesis program has crashed:\n{}".format(e))
