@@ -126,6 +126,7 @@ def get(url, s):
             except:
                 print("FAILED GET, RETRYING {}".format(i))
                 time.sleep(0.5)
+        print("SLEEPING FOR",UPDATE_INTERVAL_LENGTH,"SECONDS")
         time.sleep(UPDATE_INTERVAL_LENGTH)
 
 def post(url, data, s):
@@ -166,6 +167,8 @@ def run():
         lastTime = now
         time.sleep(UPDATE_FREQ)
 
+## WORK IN PROGRESS
+## for full chatbot functionality
 def check_emails():
     ## continuously keep checking emails for message
     message, last_id = sms.get_message(0)
